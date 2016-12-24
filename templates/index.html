@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" style="width: 100%">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+</head>
+<body style="width: 100%">
+<div>
+    <a href="{% url 'add_news' %}">Добавить новость</a>
+    <a href="{% url 'add_tm' %}">Добавить методичку</a>
+</div>
+<div style="display: inline-block; width: 33%; border-right: 1px solid rgba(0,0,0, .2)">
+<h1 style="text-align: center">Новости</h1>
+    {% for object in news_list %}
+        <h3>{{ object.title }}</h3>
+        {% if object.text %}
+        <pre style="white-space: pre-wrap;">{{ object.text|safe }}</pre>
+        {% else %}
+        Материал пуст
+        {% endif %}
+        <br>
+        <a href="{% url 'edit_news' object.id %}">Перейти к редактированию</a>
+    {% endfor %}
+</div>
+<div style="display: inline-block; width: 33%; vertical-align: top; border-right: 1px solid rgba(0,0,0, .2)">
+<h1 style="text-align: center">Методические материалы</h1>
+    {% for object in tm_list %}
+        <h3>{{ object.title }}</h3>
+        {% if object.dlink %}
+        <a href="{{ object.dlink|safe }}">Скачать материал</a>
+        {% else %}
+        Ссылка на материал отсутствует
+        {% endif %}
+        <br>
+        <a href="{% url 'edit_tm' object.id %}">Перейти к редактированию</a>
+    {% endfor %}
+</div>
+<div style="display: inline-block; width: 33%; vertical-align: top;">
+<h1 style="text-align: center">Последние вопросы</h1>
+    {% for object in qa_list %}
+        <h3>{{ object.title }}</h3>
+        {% if object.text %}
+        Вопрос: <pre>{{ object.text|truncatewords:30 }}</pre>
+        {% else %}
+        Вопрос пуст
+        {% endif %}
+        Ответ: {% if object.answer %}
+        <pre style="white-space: pre-wrap;">{{ object.answer|truncatewords:30 }}</pre>
+        {% else %}
+        <br><br>Ответ еще не дан, <a href="{% url 'add_answer' object.id %}/">ответить</a>
+        {% endif %}
+    {% endfor %}
+</div>
+</body>
+</html>
