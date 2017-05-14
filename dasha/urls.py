@@ -25,5 +25,7 @@ urlpatterns = [
     url(r'^login/$', views.AuthView.as_view()),
     url(r'^add_news/$', views.NewsAdd.as_view(), name='news-add'),
     url(r'^add_tm/$', views.TMAdd.as_view(), name='material-add'),
-    url(r'^answer/(?P<id>\d+)/$', views.AddAnswer.as_view(), name='add_answer')
+    url(r'^answer/(?P<id>\d+)/$', views.AddAnswer.as_view(), name='add_answer'),
+    url(r'^delete/m/(?P<id>\d+)/$', views.TMDelete.as_view(), name='material-delete'),
+    url(r'^delete/n/(?P<id>\d+)/$', views.NewsDelete.as_view(), name='news-delete')
 ]

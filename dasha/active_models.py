@@ -33,7 +33,7 @@ class TeachingMaterial(BaseActiveRecord):
 
     def clean_date(self, date):
         if date:
-            date = datetime.fromtimestamp(date / 1000.)
+            date = datetime.fromtimestamp(int(date) / 1000.)
         return date
 
 
@@ -47,5 +47,5 @@ class Question(BaseActiveRecord):
 
     def clean_date(self, date):
         if date:
-            date = datetime.fromtimestamp(date / 1000.)
+            date = datetime.fromtimestamp(int(date) / 1000.)
         return date

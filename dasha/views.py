@@ -88,6 +88,5 @@ class NewsDelete(View):
 
 class TMDelete(View):
     def get(self, request, id):
-        if PersonLayer.is_auth(request.COOKIES):
-            TeachingMaterialLayer.delete(id=id)
+        TeachingMaterialLayer.delete(id=id)
         return HttpResponseRedirect(reverse('material-list'))

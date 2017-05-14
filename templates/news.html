@@ -10,6 +10,9 @@
     {% for object in news_list %}
       <div class="blog-post">
         <h2 class="blog-post-title">{{ object.title }}</h2>
+          <a style="position:absolute; right: 0; top: 20px" href="{% url 'news-delete' object.id %}">
+              <img src="/static/delete-1-icon.png" style="width: 15px;" alt="Удалить">
+          </a>
         <p class="blog-post-meta">{{ object.date }}</p>
 
         <p>{{ object.text }}</p>
