@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block page_title %}Вопросы{% endblock %}
+{% block page_desc %}Студенты спрашивают{% endblock %}
+{% block nav %}
+    {% with current='answers' %}
+        {% include 'inc/nav.html' %}
+    {% endwith %}
+{% endblock %}
+{% block objects %}
+    {% for object in qa_list %}
+      <div class="blog-post">
+        <h2 class="blog-post-title">{{ object.title }}</h2>
+        <p class="blog-post-meta">{{ object.date }}</p>
+
+        <p>{{ object.text }}</p>
+        {% if object.answer %}
+        <p>Ответ: {{ object.answer }}</p>
+        {% else %}
+        <form method="post" action="/answer/{{ object.id }}/">
+            Ответить:
+            <textarea class="form-control" rows="3" name="answer" style="margin: 10px 0 10px 0"></textarea>
+            <input class="btn btn-default" type="submit" value="Submit">
+            {% csrf_token %}
+        </form>
+        {% endif %}
+
+      </div><!-- /.blog-post -->
+    {% endfor %}
+{% endblock %}

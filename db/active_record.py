@@ -1,6 +1,7 @@
 """
 Базовая функциональность классов ActiveRecord
 """
+import datetime
 
 from db.db import Database
 
@@ -31,11 +32,10 @@ class BaseActiveRecord:
         # Наследники будут определять что должно быть.
         if args:
             for i, key in enumerate(self.fields()):
-                setattr(self, key, args[i])
-
-        elif kwargs:
-            for key in self.fields():
-                setattr(self, key, kwargs.get(key))
+                value = args[i]
+                if hasattr(self, 'clean_' + key):
+                    value = getattr(self, 'clean_' + key)(value)
+                setattr(self, key, value)
         else:
             raise Exception
 
@@ -48,20 +48,19 @@ class BaseActiveRecord:
         return fields
 
     @classmethod
-    def find(cls, **kwargs):
+    def find(cls, date=None, **kwargs):
         where = ''
         data = []
         for key, value in kwargs.items():
-            if where:
-                where += ' and '
-            else:
-                where = 'WHERE '
+            where += ' and '
             if isinstance(value, list):
                 where += '{} IN ({})'.format(key, ', '.join([str(x) for x in value]))
             else:
                 where += '{}=?'.format(key)
                 data.append(value)
-        sql = "SELECT {fields} FROM {table_name} {where}".format(fields=', '.join(cls.fields()), table_name=cls.table_name, where=where)
+        if date:
+            where += ' and {} < date and date < {}'.format(date[0], date[1])
+        sql = "SELECT {fields} FROM {table_name} where 1{where}".format(fields=', '.join(cls.fields()), table_name=cls.table_name, where=where)
         result = []
         for row in Database.get_database().execute(sql, data).fetchall():
             result.append(cls(*row))
@@ -70,6 +69,9 @@ class BaseActiveRecord:
     def save(self):
         to_save = {}
         for key in self.fields():
+            if key == 'date':
+                to_save[key] = getattr(self, key).timestamp() * 1000
+                continue
             to_save[key] = getattr(self, key)
             if key == 'id' and not isinstance(to_save[key], int):  # Получаем новый id
                 to_save['id'] = max([x.id for x in self.find()] or [0]) + 1

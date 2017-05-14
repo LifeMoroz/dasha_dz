@@ -1,8 +1,12 @@
+import datetime
+
 from django.forms import Form, CharField, URLField, Textarea
 from django.http import HttpResponse
 from django.urls import reverse
 
-from dasha.models import Person, News, TeachingMaterial, Question
+from dasha.active_models import Person, News, TeachingMaterial, Question
+from dasha import models
+from dasha.forms import NewsForm, QuestionForm, TeachingMaterialForm
 
 
 class ServiceLayer:
@@ -10,7 +14,12 @@ class ServiceLayer:
     Базовый класс слоя служб.
     Пока пуст.
     """
-    pass
+    @classmethod
+    def parse_date(cls, params):
+        if 'start_date' in params:
+            start_date = datetime.datetime.strptime(params.pop('start_date')[0], "%Y-%m-%d").timestamp() * 1000
+            end_date = datetime.datetime.strptime(params.pop('end_date')[0], "%Y-%m-%d").timestamp() * 1000
+            params['date'] = (start_date, end_date)
 
 
 class NewsLayer(ServiceLayer):
@@ -23,8 +32,11 @@ class NewsLayer(ServiceLayer):
         return EditForm
 
     @classmethod
-    def add_news(cls):
-        return News(title='New news', text='').save()
+    def add_news(cls, data=None):
+        data = data or {}
+        form = NewsForm(data)
+        if form.is_valid():
+            news = form.save(True)
 
     @classmethod
     def get_edit_context(cls, id, form=None):
@@ -49,8 +61,10 @@ class NewsLayer(ServiceLayer):
             return False, form
 
     @classmethod
-    def get_index_context(cls):
-        return {"news_list": News.find()}
+    def get_index_context(cls, params=None):
+        params = dict(params or {})
+        cls.parse_date(params)
+        return {"news_list": News.find(**params), "form": NewsForm()}
 
     @classmethod
     def delete(cls, id):
@@ -67,8 +81,11 @@ class TeachingMaterialLayer(ServiceLayer):
         return EditForm
 
     @classmethod
-    def add_tm(cls):
-        return TeachingMaterial(title='New tm', dlink='').save()
+    def add_tm(cls, data):
+        data = data or {}
+        form = TeachingMaterialForm(data)
+        if form.is_valid():
+            form.save(True)
 
     @classmethod
     def get_edit_context(cls, id, form=None):
@@ -93,8 +110,10 @@ class TeachingMaterialLayer(ServiceLayer):
             return False, form
 
     @classmethod
-    def get_index_context(cls):
-        return {"tm_list": TeachingMaterial.find()}
+    def get_index_context(cls, params=None):
+        params = dict(params or {})
+        cls.parse_date(params)
+        return {"tm_list": TeachingMaterial.find(**params), "form": TeachingMaterialForm()}
 
     @classmethod
     def delete(cls, id):
@@ -112,8 +131,6 @@ class QALayer(ServiceLayer):
     @classmethod
     def get_edit_form(cls):
         class EditForm(Form):
-            title = CharField(label='Название вопроса', max_length=255, disabled=True, required=False)
-            text = CharField(label='Текст', max_length=255, disabled=True, widget=Textarea, required=False)
             answer = CharField(label='Ответ', max_length=255, widget=Textarea)
         return EditForm
 
@@ -129,8 +146,10 @@ class QALayer(ServiceLayer):
         return True, obj
 
     @classmethod
-    def get_index_context(cls):
-        return {"qa_list": Question.find()}
+    def get_index_context(cls, params=None):
+        params = dict(params or {})
+        cls.parse_date(params)
+        return {"qa_list": Question.find(**params), "form": QuestionForm()}
 
 
 class PersonLayer(ServiceLayer):

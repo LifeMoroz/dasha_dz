@@ -1,0 +1,10 @@
+<div class="masthead">
+<h3 class="text-muted">Software Development Technologies</h3>
+<nav>
+  <ul class="nav nav-justified">
+    <li{% if current == 'news' %} class="active"{% endif %}><a href="{% url 'news-list' %}">News</a></li>
+    <li{% if current == 'materials' %} class="active"{% endif %}><a href="{% url 'material-list' %}">Materials</a></li>
+    <li{% if current == 'answers' %} class="active"{% endif %}><a href="{% url 'answers-list' %}">Responses</a></li>
+  </ul>
+</nav>
+</div>

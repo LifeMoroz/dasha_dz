@@ -6,20 +6,36 @@ from django.views import View
 from dasha.service_layer import PersonLayer, NewsLayer, TeachingMaterialLayer, QALayer
 
 
-class IndexView(View):
+class NewsList(View):
     def get(self, request):
         if PersonLayer.is_auth(request.COOKIES):
             context = PersonLayer.get_index_context(request.COOKIES)
-            context.update(NewsLayer.get_index_context())
-            context.update(TeachingMaterialLayer.get_index_context())
-            context.update(QALayer.get_index_context())
-            return render(request, 'index.html', context)
+            context.update(NewsLayer.get_index_context(request.GET))
+            return render(request, 'news.html', context)
+        return render(request, 'auth.html', PersonLayer.get_auth_context())
+
+
+class TMList(View):
+    def get(self, request):
+        if PersonLayer.is_auth(request.COOKIES):
+            context = PersonLayer.get_index_context(request.COOKIES)
+            context.update(TeachingMaterialLayer.get_index_context(request.GET))
+            return render(request, 'materials.html', context)
+        return render(request, 'auth.html', PersonLayer.get_auth_context())
+
+
+class AnswersList(View):
+    def get(self, request):
+        if PersonLayer.is_auth(request.COOKIES):
+            context = PersonLayer.get_index_context(request.COOKIES)
+            context.update(QALayer.get_index_context(request.GET))
+            return render(request, 'answers.html', context)
         return render(request, 'auth.html', PersonLayer.get_auth_context())
 
 
 class AuthView(View):
     def post(self, request):
-        response = HttpResponseRedirect(reverse('index'))
+        response = HttpResponseRedirect(reverse('news-list'))
         success, response = PersonLayer.set_auth(response, request.POST)
         if success:
             return response
@@ -28,77 +44,50 @@ class AuthView(View):
 
 
 class NewsAdd(View):
-    def get(self, request):
-        if PersonLayer.is_auth(request.COOKIES):
-            news = NewsLayer.add_news()
-            return HttpResponseRedirect(reverse('edit_news', args=(news.id,)))
-        else:
-            return HttpResponseRedirect(reverse('index'))
+    def post(self, request):
+        NewsLayer.add_news(request.POST)
+        return HttpResponseRedirect(reverse('news-list'))
 
 
 class TMAdd(View):
-    def get(self, request):
-        if PersonLayer.is_auth(request.COOKIES):
-            tm = TeachingMaterialLayer.add_tm()
-            return HttpResponseRedirect(reverse('edit', args=(tm.id,)))
-        else:
-            return HttpResponseRedirect(reverse('index'))
+    def post(self, request):
+        TeachingMaterialLayer.add_tm(request.POST)
+        return HttpResponseRedirect(reverse('material-list'))
 
 
 class TMEdit(View):
-    def get(self, request, id):
-        if not PersonLayer.is_auth(request.COOKIES):
-            return HttpResponseRedirect(reverse('index'))
-        return render(request, 'edit.html', TeachingMaterialLayer.get_edit_context(id))
-
     def post(self, request, id):
         if not PersonLayer.is_auth(request.COOKIES):
-            return HttpResponseRedirect(reverse('index'))
-        success, form = TeachingMaterialLayer.update_tm(id, request.POST)
-        if success:
-            return HttpResponseRedirect(reverse('index'))
-        return render(request, 'edit.html', TeachingMaterialLayer.get_edit_context(id, form))
+            return HttpResponseRedirect(reverse('material-list'))
+        TeachingMaterialLayer.update_tm(id, request.POST)
+        return HttpResponseRedirect(reverse('material-list'))
 
 
 class NewsEdit(View):
-    def get(self, request, id):
-        if not PersonLayer.is_auth(request.COOKIES):
-            return HttpResponseRedirect(reverse('index'))
-        return render(request, 'edit.html', NewsLayer.get_edit_context(id))
-
     def post(self, request, id):
         if not PersonLayer.is_auth(request.COOKIES):
-            return HttpResponseRedirect(reverse('index'))
-        success, form = NewsLayer.update_news(id, request.POST)
-        if success:
-            return HttpResponseRedirect(reverse('index'))
-        return render(request, 'edit.html', NewsLayer.get_edit_context(id, form))
+            return HttpResponseRedirect(reverse('news-list'))
+        NewsLayer.update_news(id, request.POST)
+        return reverse('news-list')
 
 
 class AddAnswer(View):
-    def get(self, request, id):
-        if not PersonLayer.is_auth(request.COOKIES):
-            return HttpResponseRedirect(reverse('index'))
-        return render(request, 'edit.html', QALayer.get_edit_context(id))
-
     def post(self, request, id):
         if not PersonLayer.is_auth(request.COOKIES):
-            return HttpResponseRedirect(reverse('index'))
-        success, form = QALayer.add_answer(id, request.POST)
-        if success:
-            return HttpResponseRedirect(reverse('index'))
-        return render(request, 'edit.html', QALayer.get_edit_context(id, form))
+            return HttpResponseRedirect(reverse('answers-list'))
+        QALayer.add_answer(id, request.POST)
+        return reverse('answers-list')
 
 
 class NewsDelete(View):
     def get(self, request, id):
         if PersonLayer.is_auth(request.COOKIES):
             NewsLayer.delete(id=id)
-        return HttpResponseRedirect(reverse('index'))
+        return HttpResponseRedirect(reverse('news-list'))
 
 
 class TMDelete(View):
     def get(self, request, id):
         if PersonLayer.is_auth(request.COOKIES):
             TeachingMaterialLayer.delete(id=id)
-        return HttpResponseRedirect(reverse('index'))
+        return HttpResponseRedirect(reverse('material-list'))

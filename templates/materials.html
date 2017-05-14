@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block page_title %}Материалы{% endblock %}
+{% block page_desc %}Страница содержит методические материалы{% endblock %}
+{% block nav %}
+    {% with current='materials' %}
+        {% include 'inc/nav.html' %}
+    {% endwith %}
+{% endblock %}
+{% block objects %}
+    {% for object in tm_list %}
+      <div class="blog-post">
+        <h2 class="blog-post-title">{{ object.title }}</h2>
+        <p class="blog-post-meta">{{ object.date }}</p>
+
+        <p>{{ object.description }}</p>
+        <a href="{{ object.dlink }}" target="_blank" class="btn btn-primary">Скачать</a>
+      </div><!-- /.blog-post -->
+    {% endfor %}
+    <button type="button" class="btn btn-primary btn-lg pull-right" data-toggle="modal" data-target="#new">
+      Add material
+    </button>
+    {% with action='material-add' %}
+    {% include 'inc/modal.html' %}<!-- Modal -->
+    {% endwith %}
+{% endblock %}
