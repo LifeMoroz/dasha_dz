@@ -4,6 +4,7 @@
 import datetime
 
 from db.db import Database
+from db.iterator import ListIterator, Iterator
 
 
 class Field:
@@ -86,3 +87,6 @@ class BaseActiveRecord:
     def delete(self):
         sql = "DELETE FROM {table_name} WHERE id={id}".format(table_name=self.table_name, id=self.id)
         Database.get_database().execute(sql)
+
+    def iterator(self) -> Iterator:
+        return ListIterator(self.find())
